@@ -1,2 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites/>
+<testsuites>
+  <testsuite name="" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.538412">
+    <testsuite name="Project Test Suite" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.538412">
+      <testsuite name="App\Tests\Controller\TaskControllerTest" file="C:\Users\hyaci\OneDrive\Bureau\FormationPHP\P8\PHP-P8\tests\Controller\TaskControllerTest.php" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.538412">
+        <testcase name="testDeleteTask" class="App\Tests\Controller\TaskControllerTest" classname="App.Tests.Controller.TaskControllerTest" file="C:\Users\hyaci\OneDrive\Bureau\FormationPHP\P8\PHP-P8\tests\Controller\TaskControllerTest.php" line="52" assertions="1" time="0.538412"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
