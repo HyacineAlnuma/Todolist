@@ -15,13 +15,30 @@ class TaskController extends AbstractController
 {
 
     #[Route('/tasks', name: 'task_list')]
-    public function listAction(EntityManagerInterface $em, TaskRepository $taskRepository)
+    public function listAllAction(EntityManagerInterface $em, TaskRepository $taskRepository, Request $request)
     {
         $user = $this->getUser();
-        $tasks = $taskRepository->findBy(['user'=> $user]);
+        $tasks = $taskRepository->findAll();
+
+        $uri = $request->getUri();
 
         return $this->render('task/list.html.twig', [
             'tasks' => $tasks,
+            'uri' => $uri,
+        ]);
+    }
+
+    #[Route('/tasks/done', name: 'task_list_done')]
+    public function listAction(EntityManagerInterface $em, TaskRepository $taskRepository, Request $request)
+    {
+        $user = $this->getUser();
+        $tasks = $taskRepository->findBy(['isDone' => true]);
+
+        $uri = $request->getUri();
+
+        return $this->render('task/list.html.twig', [
+            'tasks' => $tasks,
+            'uri' => $uri,
         ]);
     }
 
@@ -72,13 +89,12 @@ class TaskController extends AbstractController
     }
 
     #[Route('/tasks/{id}/toggle', name: 'task_toggle')]
-    #[IsGranted('TASK_MANAGE', 'task', 'Access denied')]
     public function toggleTaskAction(Task $task, EntityManagerInterface $em)
     {
         $task->toggle(!$task->isDone());
         $em->flush();
 
-        $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme faite.', $task->getTitle()));
+        $this->addFlash('success', sprintf('Le status de la tâche %s a bien été changé.', $task->getTitle()));
 
         return $this->redirectToRoute('task_list');
     }

@@ -19,7 +19,7 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        $this->loadAnonymousUsersAndTasks($manager);
+        $this->loadAnonymousTasks($manager);
         $this->loadUserAdmin($manager);
         $this->loadUsersAndTasks($manager);
 
@@ -29,44 +29,45 @@ class AppFixtures extends Fixture
     private function loadUserAdmin(ObjectManager $manager): void 
     {
         //admin
-        $userAdmin = new User;
-        $userAdmin->setUsername("admin");
-        $userAdmin->setEmail("admin@todolist.com");
-        $userAdmin->setRoles(["ROLE_ADMIN"]);
-        $userAdmin->setPassword($this->userPasswordHasher->hashPassword($userAdmin, 'password'));
+        $userAdmin = new User();
+        $userAdmin
+            ->setUsername("admin")
+            ->setEmail("admin@todolist.com")
+            ->setRoles(["ROLE_ADMIN"])
+            ->setPassword($this->userPasswordHasher->hashPassword($userAdmin, 'password'))
+        ;
+        $this->addReference('admin', $userAdmin);
         $manager->persist($userAdmin);
     }
 
-    private function loadAnonymousUsersAndTasks(ObjectManager $manager): void
+    private function loadAnonymousTasks(ObjectManager $manager): void
     {
-        //anonymous user
-        $userAnonymous = new User;
-        $userAnonymous->setUsername("anonymous");
-        $userAnonymous->setEmail("anonymous@todolist.com");
-        $userAnonymous->setRoles(["ROLE_USER"]);
-        $userAnonymous->setPassword($this->userPasswordHasher->hashPassword($userAnonymous, 'password'));
-        $manager->persist($userAnonymous);
-
         //tasks linked to anonymous user
         for ($i = 0; $i < 10; $i++) {
-            $task = new Task;
-            $task->setTitle("Task" . $i);
-            $task->setContent("Content" . $i);
-            $task->setUser($userAnonymous);
+            $task = (new Task())
+                ->setTitle("Task" . $i)
+                ->setContent("Content" . $i)
+                ->setUser(null)
+            ;
             $manager->persist($task);
         }
     }
 
     private function loadUsersAndTasks(ObjectManager $manager): void
     {
-        // //users
+        //users
         $usersList = [];
         for ($i = 0; $i < 10; $i++) {
-            $user = new User;
-            $user->setUsername("user" . $i);
-            $user->setEmail("user" . $i . "@todolist.com");
-            $user->setRoles(["ROLE_USER"]);
-            $user->setPassword($this->userPasswordHasher->hashPassword($user, 'password'));
+            $user = new User();
+            $user
+                ->setUsername("user" . $i)
+                ->setEmail("user" . $i . "@todolist.com")
+                ->setRoles(["ROLE_USER"])
+                ->setPassword($this->userPasswordHasher->hashPassword($user, 'password'))
+            ;
+            if($i === 0){
+                $this->addReference('user', $user);;
+            }
             $manager->persist($user);
 
             $usersList[] = $user;
@@ -74,10 +75,11 @@ class AppFixtures extends Fixture
 
         //tasks linked to user
         for ($i = 10; $i < 40; $i++) {
-            $task = new Task;
-            $task->setTitle("Task" . $i);
-            $task->setContent("Content" . $i);
-            $task->setUser($usersList[array_rand($usersList)]);
+            $task = (new Task())
+                ->setTitle("Task" . $i)
+                ->setContent("Content" . $i)
+                ->setUser($usersList[array_rand($usersList)])
+            ;
             $manager->persist($task);
         }
     }

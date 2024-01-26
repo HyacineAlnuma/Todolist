@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Controller;
+namespace Tests\Controller;
 
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +23,14 @@ class UserControllerTest extends WebTestCase
 
     public function testUserListPageIfAdmin(): void
     {
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_list'));
+        $crawler = $this->client->request('GET', '/users/list');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $this->assertCount(1, $crawler->filter('html:contains("Liste des utilisateurs")'));
+        $this->assertCount(13, $crawler->filter('tr'));
+
+        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
+        // $crawler = $this->client->click($logoutButton);
+        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
     }
 
     public function testUserListPageIfNotAdmin(): void
@@ -32,20 +38,52 @@ class UserControllerTest extends WebTestCase
         $this->user = $this->userRepository->findOneByEmail('user0@todolist.com');
         $this->client->loginUser($this->user);
 
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_list'));
+        $crawler = $this->client->request('GET', '/users/list');
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
     }
 
     public function testCreateUserPage(): void
     {
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_create'));
+        $crawler = $this->client->request('GET', '/users/create');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $this->assertCount(1, $crawler->filter('html:contains("Créer un utilisateur")'));
+
+        // $this->assertCount(1, $crawler->filter('html:contains("Ajouter")'));
+        // $form = $crawler->selectButton('Ajouter')->form();
+        // $form['user_username'] = 'Username test';
+        // $form['user_password_first'] = 'password';
+        // $form['user_password_second'] = 'password';
+        // $form['user_email'] = 'test@exemple.com';
+        // $form['user_roles'] = 'ROLE_USER';
+        // $this->client->submit($form);
+        // $this->client->followRedirect();   
+        // $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! L'utilisateur a bien été ajouté.');
+
+        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
+        // $crawler = $this->client->click($logoutButton);
+        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
     }
 
     public function testEditUserPageIfAdmin(): void
     {
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_edit', ['id' => $this->user->getId()]));
+        $crawler = $this->client->request('GET', '/users/15/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $this->assertCount(1, $crawler->filter('html:contains("Modifier un utilisateur")'));
+
+        // $this->assertCount(1, $crawler->filter('html:contains("Modifier")'));
+        // $form = $crawler->selectButton('Modifier')->form();
+        // $form['user_username'] = 'Username test';
+        // $form['user_password_first'] = 'password';
+        // $form['user_password_second'] = 'password';
+        // $form['user_email'] = 'test@exemple.com';
+        // $form['user_roles'] = 'ROLE_USER';
+        // $this->client->submit($form);
+        // $this->client->followRedirect();   
+        // $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! L'utilisateur a bien été modifié.');
+
+        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
+        // $crawler = $this->client->click($logoutButton);
+        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
     }
 
     public function testEditUserPageIfNotAdmin(): void
@@ -53,7 +91,7 @@ class UserControllerTest extends WebTestCase
         $this->user = $this->userRepository->findOneByEmail('user0@todolist.com');
         $this->client->loginUser($this->user);
 
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('user_edit', ['id' => $this->user->getId()]));
+        $crawler = $this->client->request('GET', '/users/15/edit');
         $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
     }
 }

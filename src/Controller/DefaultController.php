@@ -7,15 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class DefaultController extends AbstractController
 {
-    #[Route('/', name: 'home')]
+    #[Route('/', name: 'homepage')]
     public function indexAction()
     {
-        return $this->redirectToRoute('homepage');
-    }
-
-    #[Route('/home', name: 'homepage')]
-    public function hompage()
-    {  
         return $this->render('default/index.html.twig');
     }
 }

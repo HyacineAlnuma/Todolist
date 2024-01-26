@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Controller;
+namespace Tests\Controller;
 
 use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,10 +23,32 @@ class DefaultControllerTest extends WebTestCase
 
     public function testHomepage()
     {
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('homepage'));
+        $crawler = $this->client->request('GET', '/');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
+        $this->assertCount(1, $crawler->filter('html:contains("Bienvenue sur Todo List")'));
 
-        $this->client->request(Request::METHOD_GET, $this->urlGenerator->generate('home'));
-        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $newUserButton = $crawler->selectLink('Créer un utilisateur')->link();
+        $crawler = $this->client->click($newUserButton);
+        $this->assertCount(1, $crawler->filter('html:contains("Tapez le mot de passe à nouveau")'));
+        $crawler = $this->client->request('GET', '/');
+
+        $newTaskButton = $crawler->selectLink('Créer une nouvelle tâche')->link();
+        $crawler = $this->client->click($newTaskButton);
+        $this->assertCount(1, $crawler->filter('html:contains("Retour à la liste des tâches")'));
+        $crawler = $this->client->request('GET', '/');
+
+        $taskListButton = $crawler->selectLink('Consulter la liste des tâches à faire')->link();
+        $crawler = $this->client->click($taskListButton);
+        $this->assertCount(1, $crawler->filter('html:contains("Task10")'));
+        $crawler = $this->client->request('GET', '/');
+
+        $taskListButton = $crawler->selectLink('Consulter la liste des tâches terminées')->link();
+        $crawler = $this->client->click($taskListButton);
+        $this->assertCount(1, $crawler->filter('html:contains("Liste des tâches terminées")'));
+        $crawler = $this->client->request('GET', '/');
+
+        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
+        // $crawler = $this->client->click($logoutButton);
+        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
     }
 }
