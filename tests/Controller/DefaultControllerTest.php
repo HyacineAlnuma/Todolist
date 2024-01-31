@@ -3,22 +3,29 @@
 namespace Tests\Controller;
 
 use App\Entity\User;
+use App\DataFixtures\AppFixtures;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HTTPFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Doctrine\Common\DataFixtures\ReferenceRepository;
+use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Liip\TestFixturesBundle\Services\DatabaseTools\AbstractDatabaseTool;
 
 class DefaultControllerTest extends WebTestCase
 {
     private KernelBrowser|null $client = null;
+    private AbstractDatabaseTool $databaseTool;
+    private ReferenceRepository $fixtures;
 
     public function setUp(): void
     {
         $this->client = static::createClient();
-        $this->userRepository = $this->client->getContainer()->get('doctrine.orm.entity_manager')->getRepository(User::class);
-        $this->user = $this->userRepository->findOneByEmail('user0@todolist.com');
-        $this->urlGenerator = $this->client->getContainer()->get('router.default');
-        $this->client->loginUser($this->user);
+
+        $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
+        $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
+        $user = $this->fixtures->getReference('admin-test');
+        $this->client->loginUser($user);
     }
 
     public function testHomepage()
@@ -47,8 +54,15 @@ class DefaultControllerTest extends WebTestCase
         $this->assertCount(1, $crawler->filter('html:contains("Liste des tâches terminées")'));
         $crawler = $this->client->request('GET', '/');
 
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+        $logoutButton = $crawler->selectLink('Se déconnecter')->link();
+        $this->client->followRedirects();   
+        $crawler = $this->client->click($logoutButton);
+        $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        unset($this->databaseTool);
     }
 }

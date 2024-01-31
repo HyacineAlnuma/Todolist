@@ -2,13 +2,13 @@
 
 namespace Tests\Controller;
 
-use App\Entity\Task;
 use App\Entity\User;
 use App\DataFixtures\AppFixtures;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HTTPFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Liip\TestFixturesBundle\Services\DatabaseTools\AbstractDatabaseTool;
 
@@ -16,20 +16,16 @@ class TaskControllerTest extends WebTestCase
 {
     private KernelBrowser|null $client = null;
     private AbstractDatabaseTool $databaseTool;
-    private Task $task;
+    private ReferenceRepository $fixtures;
 
     public function setUp(): void
     {
         $this->client = static::createClient();
-        // $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class);
-        // $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
-        // $user = $this->fixtures->getReference('user');
-    
-        $this->userRepository = $this->client->getContainer()->get('doctrine.orm.entity_manager')->getRepository(User::class);
-        $this->user = $this->userRepository->findOneByEmail('user0@todolist.com');
-        $this->client->loginUser($this->user);
-        $taskRepository = $this->client->getContainer()->get('doctrine.orm.entity_manager')->getRepository(Task::class);
-        $this->task = $taskRepository->findOneBy(['title' => 'Task0']);
+
+        $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
+        $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
+        $user = $this->fixtures->getReference('user-test');
+        $this->client->loginUser($user);
     }
 
     public function testTaskListPage(): void
@@ -38,123 +34,106 @@ class TaskControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertCount(40, $crawler->filter('div.thumbnail'));
-
-        $newUserButton = $crawler->selectLink('Créer un utilisateur')->link();
-        $crawler = $this->client->click($newUserButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Tapez le mot de passe à nouveau")'));
-        $crawler = $this->client->request('GET', '/tasks');
-
-        $newTaskButton = $crawler->selectLink('Créer une tâche')->link();
-        $crawler = $this->client->click($newTaskButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Retour à la liste des tâches")'));
-        $crawler = $this->client->request('GET', '/tasks');
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
     }
 
-    public function testCreateTaskPage(): void
+    public function testCreateTask(): void
     {
         $crawler = $this->client->request('GET', 'tasks/create');
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertCount(1, $crawler->filter('html:contains("Retour à la liste des tâches")'));
 
-        $newUserButton = $crawler->selectLink('Créer un utilisateur')->link();
-        $crawler = $this->client->click($newUserButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Tapez le mot de passe à nouveau")'));
-        $crawler = $this->client->request('GET', 'tasks/create');
-    
+        $this->assertCount(1, $crawler->filter('html:contains("Ajouter")'));
+        $form = $crawler->selectButton('Ajouter')->form();
+        $form['task[title]'] = 'Title test';
+        $form['task[content]'] = 'Content test';
+        $this->client->submit($form);
+        $this->client->followRedirect();   
+        $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a été bien été ajoutée.');
 
-        // $this->assertCount(1, $crawler->filter('html:contains("Ajouter")'));
-        // $form = $crawler->selectButton('Ajouter')->form();
-        // $form['task_title'] = 'Title test';
-        // $form['task_content'] = 'Content test';
-        // $this->client->submit($form);
-        // $this->client->followRedirect();   
-        // $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a été bien été ajoutée.');
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+        $crawler = $this->client->request('GET', '/tasks');
+        $this->assertCount(41, $crawler->filter('div.thumbnail'));
     }
 
-    public function testEditTaskPageIfUserValid(): void
+    public function testEditTaskIfUserValid(): void
     {
-        $crawler = $this->client->request('GET', '/tasks/51/edit');
+        $taskId = $this->fixtures->getReference('owned-task')->getId();
+        $crawler = $this->client->request('GET', '/tasks/edit/' . $taskId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertCount(1, $crawler->filter('html:contains("Modifier")'));
 
-        $newUserButton = $crawler->selectLink('Créer un utilisateur')->link();
-        $crawler = $this->client->click($newUserButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Tapez le mot de passe à nouveau")'));
-        $crawler = $this->client->request('GET', '/tasks/51/edit');
+        $form = $crawler->selectButton('Modifier')->form();
+        $form['task[title]'] = 'Title test modified';
+        $form['task[content]'] = 'Content test';
+        $this->client->submit($form);
+        $this->client->followRedirect();
+        $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a bien été modifiée.');
 
-        // $form = $crawler->selectButton('Modifier')->form();
-        // $form['task_title'] = 'Title test';
-        // $form['task_content'] = 'Content test';
-        // $this->client->submit($form);
-        // $this->client->followRedirect();
-        // $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a été bien été modifiée.');
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+        $crawler = $this->client->request('GET', '/tasks');
+        $this->assertCount(1, $crawler->filter('html:contains("Title test modified")'));
     }
 
-    public function testEditTaskPageIfUserInvalid(): void
+    public function testEditTaskIfUserInvalid(): void
     {
-        $crawler = $this->client->request('GET', '/tasks/52/edit');
-
-        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $taskId = $this->fixtures->getReference('unowned-task')->getId();
+        $crawler = $this->client->request('GET', '/tasks/edit/' . $taskId);
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     public function testToggleTask(): void
     {
-        $crawler = $this->client->request('GET', '/tasks');
-        $this->assertCount(1, $crawler->filter('html:contains("Marquer comme faite")')->first());
+        $taskId = $this->fixtures->getReference('owned-task')->getId();
+        $crawler = $this->client->request('GET', '/tasks/toggle/' . $taskId);
+        $crawler = $this->client->request('GET', '/tasks/done');
 
-        $toggleButton = $crawler->selectButton('Marquer comme faite')->form();
-        $this->client->submit($toggleButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Marquer non terminée")'));
+        $this->assertCount(1, $crawler->filter('html:contains("Task10")'));
+
+        $crawler = $this->client->request('GET', '/tasks/toggle/' . $taskId);
+        $crawler = $this->client->request('GET', '/tasks/done');
+
+        $this->assertCount(0, $crawler->filter('html:contains("Task0")'));
     }
 
     public function testTaskIsDoneListPage(): void
     {
         $crawler = $this->client->request('GET', '/tasks/done');
-        //tester que la tâche que l'on vient de toggle dans la méthode précédente se trouve ici
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
-        
-
-        $newUserButton = $crawler->selectLink('Créer un utilisateur')->link();
-        $crawler = $this->client->click($newUserButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Tapez le mot de passe à nouveau")'));
-        $crawler = $this->client->request('GET', '/tasks');
-
-        $newTaskButton = $crawler->selectLink('Créer une tâche')->link();
-        $crawler = $this->client->click($newTaskButton);
-        $this->assertCount(1, $crawler->filter('html:contains("Retour à la liste des tâches")'));
-        $crawler = $this->client->request('GET', '/tasks');
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
     }
 
     public function testDeleteTask(): void
     {
-        $crawler = $this->client->request('GET', '/tasks');
-        $this->assertCount(1, $crawler->filter('html:contains("Supprimer")')->first());
-
-        $deleteButton = $crawler->selectButton('Marquer comme faite')->form();
-        $this->client->submit($deleteButton);
+        $taskId = $this->fixtures->getReference('owned-task')->getId();
+        $crawler = $this->client->request('GET', '/tasks/delete/' . $taskId);
+        $crawler = $this->client->followRedirect();
+        $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a bien été supprimée.');
         $this->assertCount(0, $crawler->filter('html:contains("Task10")'));
+    }
+
+    public function testDeleteTaskInvalidUser(): void
+    {
+        $taskId = $this->fixtures->getReference('unowned-task')->getId();
+        $crawler = $this->client->request('GET', '/tasks/delete/' . $taskId);
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        $crawler = $this->client->request('GET', '/tasks');
+        $this->assertCount(1, $crawler->filter('html:contains("Task10")'));
+    }
+
+    public function testDeleteAnonymousTaskIfAdmin(): void
+    {
+        $user = $this->fixtures->getReference('admin-test');
+        $this->client->loginUser($user);
+
+        $taskId = $this->fixtures->getReference('anonymous-task')->getId();
+        $crawler = $this->client->request('GET', '/tasks/delete/' . $taskId);
+        $crawler = $this->client->followRedirect();
+        $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a bien été supprimée.');
+        $this->assertCount(0, $crawler->filter('html:contains("Task0")'));
     }
 
     public function tearDown(): void
     {
+        parent::tearDown();
         unset($this->databaseTool);
     }
 }

@@ -3,22 +3,29 @@
 namespace Tests\Controller;
 
 use App\Entity\User;
+use App\DataFixtures\AppFixtures;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HTTPFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Doctrine\Common\DataFixtures\ReferenceRepository;
+use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
+use Liip\TestFixturesBundle\Services\DatabaseTools\AbstractDatabaseTool;
 
 class UserControllerTest extends WebTestCase
 {
     private KernelBrowser|null $client = null;
+    private AbstractDatabaseTool $databaseTool;
+    private ReferenceRepository $fixtures;
 
     public function setUp(): void
     {
         $this->client = static::createClient();
-        $this->userRepository = $this->client->getContainer()->get('doctrine.orm.entity_manager')->getRepository(User::class);
-        $this->user = $this->userRepository->findOneByEmail('admin@todolist.com');
-        $this->urlGenerator = $this->client->getContainer()->get('router.default');
-        $this->client->loginUser($this->user);
+
+        $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
+        $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
+        $user = $this->fixtures->getReference('admin-test');
+        $this->client->loginUser($user);
     }
 
     public function testUserListPageIfAdmin(): void
@@ -26,72 +33,95 @@ class UserControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/users/list');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertCount(1, $crawler->filter('html:contains("Liste des utilisateurs")'));
-        $this->assertCount(13, $crawler->filter('tr'));
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+        $this->assertCount(12, $crawler->filter('tr'));
     }
 
     public function testUserListPageIfNotAdmin(): void
     {
-        $this->user = $this->userRepository->findOneByEmail('user0@todolist.com');
-        $this->client->loginUser($this->user);
+        $user = $this->fixtures->getReference('user-test');
+        $this->client->loginUser($user);
 
         $crawler = $this->client->request('GET', '/users/list');
-        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
-    public function testCreateUserPage(): void
+    public function testCreateUser(): void
     {
         $crawler = $this->client->request('GET', '/users/create');
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertCount(1, $crawler->filter('html:contains("Créer un utilisateur")'));
 
-        // $this->assertCount(1, $crawler->filter('html:contains("Ajouter")'));
-        // $form = $crawler->selectButton('Ajouter')->form();
-        // $form['user_username'] = 'Username test';
-        // $form['user_password_first'] = 'password';
-        // $form['user_password_second'] = 'password';
-        // $form['user_email'] = 'test@exemple.com';
-        // $form['user_roles'] = 'ROLE_USER';
-        // $this->client->submit($form);
-        // $this->client->followRedirect();   
-        // $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! L'utilisateur a bien été ajouté.');
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+        $this->assertCount(1, $crawler->filter('html:contains("Ajouter")'));
+        $form = $crawler->selectButton('Ajouter')->form();
+        $form['user[username]'] = 'Username test';
+        $form['user[password][first]'] = 'password';
+        $form['user[password][second]'] = 'password';
+        $form['user[email]'] = 'test@exemple.com';
+        $form['user[roles]'] = 'ROLE_USER';
+        $this->client->submit($form);
+        $this->client->followRedirect();   
+        $this->assertSelectorTextContains("div.alert.alert-success","Superbe ! L'utilisateur a bien été ajouté.");
     }
 
-    public function testEditUserPageIfAdmin(): void
+    public function testCreateInvalidUser(): void
     {
-        $crawler = $this->client->request('GET', '/users/15/edit');
+        $crawler = $this->client->request('GET', '/users/create');
+
+        $form = $crawler->selectButton('Ajouter')->form();
+        $form['user[username]'] = 'admin';
+        $form['user[password][first]'] = 'password';
+        $form['user[password][second]'] = 'password';
+        $form['user[email]'] = 'test@exemple.com';
+        $form['user[roles]'] = 'ROLE_USER';
+        $crawler = $this->client->submit($form); 
+        $this->assertCount(1, $crawler->filter('html:contains("Il existe déjà un compte avec ce nom d\'utilisateur")'));
+    }
+
+    public function testEditUserIfAdmin(): void
+    {
+        $userId = $this->fixtures->getReference('user-test')->getId();
+        $crawler = $this->client->request('GET', '/users/edit/' . $userId);
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
-        $this->assertCount(1, $crawler->filter('html:contains("Modifier un utilisateur")'));
+        $this->assertCount(1, $crawler->filter('html:contains("Modifier")'));
 
-        // $this->assertCount(1, $crawler->filter('html:contains("Modifier")'));
-        // $form = $crawler->selectButton('Modifier')->form();
-        // $form['user_username'] = 'Username test';
-        // $form['user_password_first'] = 'password';
-        // $form['user_password_second'] = 'password';
-        // $form['user_email'] = 'test@exemple.com';
-        // $form['user_roles'] = 'ROLE_USER';
-        // $this->client->submit($form);
-        // $this->client->followRedirect();   
-        // $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! L'utilisateur a bien été modifié.');
-
-        // $logoutButton = $crawler->selectLink('Se déconnecter')->link();
-        // $crawler = $this->client->click($logoutButton);
-        // $this->assertCount(1, $crawler->filter('html:contains("Se connecter")'));
+        $form = $crawler->selectButton('Modifier')->form();
+        $form['user[username]'] = 'Username test';
+        $form['user[password][first]'] = 'password';
+        $form['user[password][second]'] = 'password';
+        $form['user[email]'] = 'test@exemple.com';
+        $form['user[roles]'] = 'ROLE_USER';
+        $this->client->submit($form);
+        $this->client->followRedirect();   
+        $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! L\'utilisateur a bien été modifié');
     }
 
-    public function testEditUserPageIfNotAdmin(): void
+    public function testEditInvalidUser(): void
     {
-        $this->user = $this->userRepository->findOneByEmail('user0@todolist.com');
-        $this->client->loginUser($this->user);
+        $userId = $this->fixtures->getReference('user-test')->getId();
+        $crawler = $this->client->request('GET', '/users/edit/' . $userId);
 
-        $crawler = $this->client->request('GET', '/users/15/edit');
-        $this->assertResponseStatusCodeSame(Response::HTTP_FOUND);
+        $form = $crawler->selectButton('Modifier')->form();
+        $form['user[username]'] = 'admin';
+        $form['user[password][first]'] = 'password';
+        $form['user[password][second]'] = 'password';
+        $form['user[email]'] = 'test@exemple.com';
+        $form['user[roles]'] = 'ROLE_USER';
+        $crawler = $this->client->submit($form); 
+        $this->assertCount(1, $crawler->filter('html:contains("Il existe déjà un compte avec ce nom d\'utilisateur")'));
+    }
+
+    public function testEditUserIfNotAdmin(): void
+    {
+        $user = $this->fixtures->getReference('user-test');
+        $this->client->loginUser($user);
+
+        $crawler = $this->client->request('GET', '/users/edit/48');
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        unset($this->databaseTool);
     }
 }

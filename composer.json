@@ -27,6 +27,7 @@
         "symfony/mime": "6.4.*",
         "symfony/monolog-bundle": "^3.0",
         "symfony/notifier": "6.4.*",
+        "symfony/options-resolver": "6.4.*",
         "symfony/process": "6.4.*",
         "symfony/property-access": "6.4.*",
         "symfony/property-info": "6.4.*",
@@ -94,7 +95,6 @@
         }
     },
     "require-dev": {
-        "dama/doctrine-test-bundle": "^8.0",
         "doctrine/doctrine-fixtures-bundle": "^3.5",
         "liip/test-fixtures-bundle": "^2.7",
         "phpunit/phpunit": "^9.6",

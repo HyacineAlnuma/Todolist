@@ -66,7 +66,7 @@ class TaskController extends AbstractController
         return $this->render('task/create.html.twig', ['form' => $form->createView()]);
     }
 
-    #[Route('/tasks/{id}/edit', name: 'task_edit')]
+    #[Route('/tasks/edit/{id}', name: 'task_edit')]
     #[IsGranted('TASK_MANAGE', 'task', 'Access denied')]
     public function editAction(Task $task, Request $request, EntityManagerInterface $em)
     {
@@ -88,7 +88,7 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/tasks/{id}/toggle', name: 'task_toggle')]
+    #[Route('/tasks/toggle/{id}', name: 'task_toggle')]
     public function toggleTaskAction(Task $task, EntityManagerInterface $em)
     {
         $task->toggle(!$task->isDone());
@@ -99,7 +99,7 @@ class TaskController extends AbstractController
         return $this->redirectToRoute('task_list');
     }
 
-    #[Route('/tasks/{id}/delete', name: 'task_delete')]
+    #[Route('/tasks/delete/{id}', name: 'task_delete')]
     #[IsGranted('TASK_DELETE', 'task', 'Access denied')]
     public function deleteTaskAction(Task $task, EntityManagerInterface $em)
     {
