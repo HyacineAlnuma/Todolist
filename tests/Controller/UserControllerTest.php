@@ -24,7 +24,7 @@ class UserControllerTest extends WebTestCase
 
         $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
         $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
-        $user = $this->fixtures->getReference('admin-test');
+        $user = $this->fixtures->getReference('admin-test', User::class);
         $this->client->loginUser($user);
     }
 
@@ -38,7 +38,7 @@ class UserControllerTest extends WebTestCase
 
     public function testUserListPageIfNotAdmin(): void
     {
-        $user = $this->fixtures->getReference('user-test');
+        $user = $this->fixtures->getReference('user-test', User::class);
         $this->client->loginUser($user);
 
         $crawler = $this->client->request('GET', '/users/list');
@@ -79,7 +79,7 @@ class UserControllerTest extends WebTestCase
 
     public function testEditUserIfAdmin(): void
     {
-        $userId = $this->fixtures->getReference('user-test')->getId();
+        $userId = $this->fixtures->getReference('user-test', User::class)->getId();
         $crawler = $this->client->request('GET', '/users/edit/' . $userId);
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
         $this->assertCount(1, $crawler->filter('html:contains("Modifier")'));
@@ -97,7 +97,7 @@ class UserControllerTest extends WebTestCase
 
     public function testEditInvalidUser(): void
     {
-        $userId = $this->fixtures->getReference('user-test')->getId();
+        $userId = $this->fixtures->getReference('user-test', User::class)->getId();
         $crawler = $this->client->request('GET', '/users/edit/' . $userId);
 
         $form = $crawler->selectButton('Modifier')->form();
@@ -112,7 +112,7 @@ class UserControllerTest extends WebTestCase
 
     public function testEditUserIfNotAdmin(): void
     {
-        $user = $this->fixtures->getReference('user-test');
+        $user = $this->fixtures->getReference('user-test', User::class);
         $this->client->loginUser($user);
 
         $crawler = $this->client->request('GET', '/users/edit/48');

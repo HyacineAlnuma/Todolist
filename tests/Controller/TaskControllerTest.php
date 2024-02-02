@@ -2,6 +2,7 @@
 
 namespace Tests\Controller;
 
+use App\Entity\Task;
 use App\Entity\User;
 use App\DataFixtures\AppFixtures;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,7 +25,7 @@ class TaskControllerTest extends WebTestCase
 
         $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
         $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
-        $user = $this->fixtures->getReference('user-test');
+        $user = $this->fixtures->getReference('user-test', User::class);
         $this->client->loginUser($user);
     }
 
@@ -57,7 +58,7 @@ class TaskControllerTest extends WebTestCase
 
     public function testEditTaskIfUserValid(): void
     {
-        $taskId = $this->fixtures->getReference('owned-task')->getId();
+        $taskId = $this->fixtures->getReference('owned-task', Task::class)->getId();
         $crawler = $this->client->request('GET', '/tasks/edit/' . $taskId);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_OK);
@@ -76,14 +77,14 @@ class TaskControllerTest extends WebTestCase
 
     public function testEditTaskIfUserInvalid(): void
     {
-        $taskId = $this->fixtures->getReference('unowned-task')->getId();
+        $taskId = $this->fixtures->getReference('unowned-task', Task::class)->getId();
         $crawler = $this->client->request('GET', '/tasks/edit/' . $taskId);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     public function testToggleTask(): void
     {
-        $taskId = $this->fixtures->getReference('owned-task')->getId();
+        $taskId = $this->fixtures->getReference('owned-task', Task::class)->getId();
         $crawler = $this->client->request('GET', '/tasks/toggle/' . $taskId);
         $crawler = $this->client->request('GET', '/tasks/done');
 
@@ -103,7 +104,7 @@ class TaskControllerTest extends WebTestCase
 
     public function testDeleteTask(): void
     {
-        $taskId = $this->fixtures->getReference('owned-task')->getId();
+        $taskId = $this->fixtures->getReference('owned-task', Task::class)->getId();
         $crawler = $this->client->request('GET', '/tasks/delete/' . $taskId);
         $crawler = $this->client->followRedirect();
         $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a bien été supprimée.');
@@ -112,7 +113,7 @@ class TaskControllerTest extends WebTestCase
 
     public function testDeleteTaskInvalidUser(): void
     {
-        $taskId = $this->fixtures->getReference('unowned-task')->getId();
+        $taskId = $this->fixtures->getReference('unowned-task', Task::class)->getId();
         $crawler = $this->client->request('GET', '/tasks/delete/' . $taskId);
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
         $crawler = $this->client->request('GET', '/tasks');
@@ -121,10 +122,10 @@ class TaskControllerTest extends WebTestCase
 
     public function testDeleteAnonymousTaskIfAdmin(): void
     {
-        $user = $this->fixtures->getReference('admin-test');
+        $user = $this->fixtures->getReference('admin-test', User::class);
         $this->client->loginUser($user);
 
-        $taskId = $this->fixtures->getReference('anonymous-task')->getId();
+        $taskId = $this->fixtures->getReference('anonymous-task', Task::class)->getId();
         $crawler = $this->client->request('GET', '/tasks/delete/' . $taskId);
         $crawler = $this->client->followRedirect();
         $this->assertSelectorTextContains('div.alert.alert-success','Superbe ! La tâche a bien été supprimée.');

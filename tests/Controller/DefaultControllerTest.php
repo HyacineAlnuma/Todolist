@@ -24,7 +24,7 @@ class DefaultControllerTest extends WebTestCase
 
         $this->databaseTool = static::getContainer()->get(DatabaseToolCollection::class)->get();
         $this->fixtures = $this->databaseTool->loadFixtures([AppFixtures::class])->getReferenceRepository();
-        $user = $this->fixtures->getReference('admin-test');
+        $user = $this->fixtures->getReference('admin-test', User::class);
         $this->client->loginUser($user);
     }
 
