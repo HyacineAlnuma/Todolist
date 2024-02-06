@@ -17,9 +17,6 @@ class UserController extends AbstractController
     #[Route('/users/list', name: 'user_list')]
     public function listAction(UserRepository $userRepository)
     {
-        // if (!in_array('ROLE_ADMIN', $this->getUser()->getRoles())) {
-        //     return $this->redirectToRoute('homepage');
-        // }
         return $this->render('user/list.html.twig', ['users' => $userRepository->findAll()]);
     }
 

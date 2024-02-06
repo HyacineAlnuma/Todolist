@@ -31,13 +31,11 @@ class TaskVoter extends Voter
             case self::MANAGE:
                 return $user === $task->getUser();
             case self::DELETE:
-                if ($user === $task->getUser() || ($task->getUser()->getId() === 0 && in_array('ROLE_ADMIN', $user->getRoles()))){
+                if ($user === $task->getUser() || ($task->getUser() === null && in_array('ROLE_ADMIN', $user->getRoles()))){
                     return true;
                 } else {
                     return false;
                 }
         }
-
-        return false;
     }
 }

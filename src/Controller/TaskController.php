@@ -15,13 +15,30 @@ class TaskController extends AbstractController
 {
 
     #[Route('/tasks', name: 'task_list')]
-    public function listAction(EntityManagerInterface $em, TaskRepository $taskRepository)
+    public function listAllAction(EntityManagerInterface $em, TaskRepository $taskRepository, Request $request)
     {
         $user = $this->getUser();
-        $tasks = $taskRepository->findBy(['user'=> $user]);
+        $tasks = $taskRepository->findAll();
+
+        $uri = $request->getUri();
 
         return $this->render('task/list.html.twig', [
             'tasks' => $tasks,
+            'uri' => $uri,
+        ]);
+    }
+
+    #[Route('/tasks/done', name: 'task_list_done')]
+    public function listAction(EntityManagerInterface $em, TaskRepository $taskRepository, Request $request)
+    {
+        $user = $this->getUser();
+        $tasks = $taskRepository->findBy(['isDone' => true]);
+
+        $uri = $request->getUri();
+
+        return $this->render('task/list.html.twig', [
+            'tasks' => $tasks,
+            'uri' => $uri,
         ]);
     }
 
@@ -49,7 +66,7 @@ class TaskController extends AbstractController
         return $this->render('task/create.html.twig', ['form' => $form->createView()]);
     }
 
-    #[Route('/tasks/{id}/edit', name: 'task_edit')]
+    #[Route('/tasks/edit/{id}', name: 'task_edit')]
     #[IsGranted('TASK_MANAGE', 'task', 'Access denied')]
     public function editAction(Task $task, Request $request, EntityManagerInterface $em)
     {
@@ -71,19 +88,18 @@ class TaskController extends AbstractController
         ]);
     }
 
-    #[Route('/tasks/{id}/toggle', name: 'task_toggle')]
-    #[IsGranted('TASK_MANAGE', 'task', 'Access denied')]
+    #[Route('/tasks/toggle/{id}', name: 'task_toggle')]
     public function toggleTaskAction(Task $task, EntityManagerInterface $em)
     {
         $task->toggle(!$task->isDone());
         $em->flush();
 
-        $this->addFlash('success', sprintf('La tâche %s a bien été marquée comme faite.', $task->getTitle()));
+        $this->addFlash('success', sprintf('Le status de la tâche %s a bien été changé.', $task->getTitle()));
 
         return $this->redirectToRoute('task_list');
     }
 
-    #[Route('/tasks/{id}/delete', name: 'task_delete')]
+    #[Route('/tasks/delete/{id}', name: 'task_delete')]
     #[IsGranted('TASK_DELETE', 'task', 'Access denied')]
     public function deleteTaskAction(Task $task, EntityManagerInterface $em)
     {
