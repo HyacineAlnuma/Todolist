@@ -8,6 +8,7 @@ use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class TaskController extends AbstractController
@@ -16,18 +17,27 @@ class TaskController extends AbstractController
     #[Route('/tasks', name: 'task_list')]
     public function listAction(EntityManagerInterface $em, TaskRepository $taskRepository)
     {
-        return $this->render('task/list.html.twig', ['tasks' => $taskRepository->findAll()]);
+        $user = $this->getUser();
+        $tasks = $taskRepository->findBy(['user'=> $user]);
+
+        return $this->render('task/list.html.twig', [
+            'tasks' => $tasks,
+        ]);
     }
 
     #[Route('/tasks/create', name: 'task_create')]
     public function createAction(Request $request, EntityManagerInterface $em)
     {
+        $user = $this->getUser();
+
         $task = new Task();
         $form = $this->createForm(TaskType::class, $task);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $task->setUser($user);
+
             $em->persist($task);
             $em->flush();
 
@@ -40,6 +50,7 @@ class TaskController extends AbstractController
     }
 
     #[Route('/tasks/{id}/edit', name: 'task_edit')]
+    #[IsGranted('TASK_MANAGE', 'task', 'Access denied')]
     public function editAction(Task $task, Request $request, EntityManagerInterface $em)
     {
         $form = $this->createForm(TaskType::class, $task);
@@ -61,6 +72,7 @@ class TaskController extends AbstractController
     }
 
     #[Route('/tasks/{id}/toggle', name: 'task_toggle')]
+    #[IsGranted('TASK_MANAGE', 'task', 'Access denied')]
     public function toggleTaskAction(Task $task, EntityManagerInterface $em)
     {
         $task->toggle(!$task->isDone());
@@ -72,6 +84,7 @@ class TaskController extends AbstractController
     }
 
     #[Route('/tasks/{id}/delete', name: 'task_delete')]
+    #[IsGranted('TASK_DELETE', 'task', 'Access denied')]
     public function deleteTaskAction(Task $task, EntityManagerInterface $em)
     {
         $em->remove($task);
