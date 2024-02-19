@@ -58,7 +58,7 @@ Launch the symfony server:
 symfony server:start
 ```
 
-You can now test the application on (https://localhost:8000/)[https://localhost:8000/]
+You can now test the application on https://localhost:8000/
 
 Here are some credentials with which you can try the app:
 
