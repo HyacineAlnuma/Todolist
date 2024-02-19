@@ -27,7 +27,7 @@ DATABASE_URL
 
 ### Data
 
-To set up the databases, run following commands (make sure to run your mysql server before) :
+To set up the databases, run following commands (make sure to run your mysql server before):
 
 >_`dev/prod :`_
 >```
@@ -40,7 +40,7 @@ To set up the databases, run following commands (make sure to run your mysql ser
 >php bin/console doctrine:schema:update --force --env=test
 >```
 
-To load the fixtures, run the following commands :
+To load the fixtures, run the following commands:
 
 >_`dev/prod :`_
 >```
@@ -53,9 +53,14 @@ To load the fixtures, run the following commands :
 
 ### Test the app
 
+Launch the symfony server:
+```
+symfony server:start
+```
+
 You can now test the application on [https://localhost:8000/]
 
-Here are some credentials with which you can try the app :
+Here are some credentials with which you can try the app:
 
 >_`user account :`_
 >```
