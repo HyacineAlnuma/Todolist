@@ -51,7 +51,7 @@ To load the fixtures, run the following commands:
 >php bin/console doctrine:fixtures:load --env=test
 >```
 
-### Test the app
+### Try the app
 
 Launch the symfony server:
 ```
@@ -73,3 +73,15 @@ Here are some credentials with which you can try the app:
 >Password: password
 >```
 
+### Tests and code coverage
+
+To test the code, run the following command:
+```
+vendor/bin/phpunit
+```
+
+To generate the code coverage, run the following command (make sure to have Xdebug installed):
+```
+vendor/bin/phpunit --coverage-html public/test-coverage
+```
+You can now check the code coverage by browsing the index.html in public/test-coverage.
