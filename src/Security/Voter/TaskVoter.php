@@ -21,9 +21,9 @@ class TaskVoter extends Voter
     {
         $user = $token->getUser();
 
-        if (!$user instanceof UserInterface) {
-            return false;
-        }
+        // if (!$user instanceof UserInterface) {
+        //     return false;
+        // }
 
         $task = $subject;
 

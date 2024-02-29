@@ -18,7 +18,7 @@ class TaskController extends AbstractController
     public function listAllAction(EntityManagerInterface $em, TaskRepository $taskRepository, Request $request)
     {
         $user = $this->getUser();
-        $tasks = $taskRepository->findAll();
+        $tasks = $taskRepository->findBy(['isDone' => false]);
 
         $uri = $request->getUri();
 
