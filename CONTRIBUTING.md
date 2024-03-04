@@ -1,36 +1,36 @@
 # CONTRIBUTION
 
-Afin de contribuer au projet, veuillez suivre les étapes suivantes.
+To contribute to the project, please follow the steps below.
 
-## 1. Créer une Issue<br>
-   Dans un premier temps, vous devrez créer [créez une nouvelle issue](https://github.com/HyacineAlnuma/PHP-P8/issues) qui correspond à la tâche que vous voulez effectuer.
+## 1. Create an Issue<br>
+   Initially, you will need to [create a new issue](https://github.com/HyacineAlnuma/PHP-P8/issues) corresponding to the task you want to implement.
 
-## 2. Créer une branche<br>
-   Pour chaque nouvelle issue vous devrez créer une nouvelle branche correspondante afin de faciliter l'intégration de nouvelle fonctionnalités sur la branche principale.
+## 2. Create a Branch<br>
+   For each new issue, you should create a corresponding new branch to facilitate the integration of new features into the main branch.
 
-## 3. Créer une pull request<br>
-   Veuillez faire une [pull request](https://github.com/HyacineAlnuma/PHP-P8/pulls) afin de soumettre toute contribution.
+## 3. Create a Pull Request<br>
+   Please create a [pull request](https://github.com/HyacineAlnuma/PHP-P8/pulls) to submit any contributions.
 
 ## 4. Validation
-   La pull request devra valider les points suivants :
-   * __Tests__ : Avant de soumettre la pull request, veuillez écrire les tests correspondants au code que vous avez écrit puis à lancer tous les tests pour vérifier que ceux-ci passent, grâce à la commande suivante :
+   The pull request must validate the following points:
+   * __Tests__ : Before submitting the pull request, please write tests corresponding to the code you have written and run all tests to verify that they pass, using the following command:
 ```
 vendor/bin/phpunit
 ```
-   De plus, il vous faudra générer un rapport de couverture du code grâce à la commande suivante :
+   Additionally, you will need to generate a code coverage report using the following command:
 ```
 vendor/bin/phpunit --coverage-html public/test-coverage
 ```
-   Le taux de couverture ne doit pas descendre en dessous de 100%.
+   The coverage rate should not drop below 100%.
    
-   * __Qualité du code__ sur [CodeClimate](https://codeclimate.com/github/HyacineAlnuma/PHP-P8) :  Veillez à ne pas faire trop baisser le taux de maintenabilité.
+   * __Code Quality__ on [CodeClimate](https://codeclimate.com/github/HyacineAlnuma/PHP-P8) :  Please ensure not to significantly decrease the maintainability rate.
    
-   * __Review__ : Une review globale sera effectuée afin de finaliser la validation de la demande d'ajout.
+   * __Review__ : A comprehensive review will be conducted to finalize the validation of the addition request.
 
-## 5. Bonnes pratiques
-   * Pour garantir la qualité de votre code et le respect des strandards de programmation en PHP, vous deverez veillez à respecter les conventions [PSR-1](https://www.php-fig.org/psr/psr-1/), [PSR-4](https://www.php-fig.org/psr/psr-4/), [PSR-12](https://www.php-fig.org/psr/psr-12/).
-   * Lors de l'ajout de nouvelles fonctionnalités, veuillez implementer les tests correspondants.
-   * Veillez à bien documenter votre code.
-   * Nous vous encourageons également à vous référer à la section [The Symfony Framework Best Practices de la documentation Symfony](https://symfony.com/doc/4.4/best_practices.html)
+## 5. Best Practices
+   * To ensure the quality of your code and adherence to PHP programming standards, please follow the conventions [PSR-1](https://www.php-fig.org/psr/psr-1/), [PSR-4](https://www.php-fig.org/psr/psr-4/), [PSR-12](https://www.php-fig.org/psr/psr-12/).
+   * When adding new features, please implement corresponding tests.
+   * Ensure proper documentation of your code.
+   * We also encourage you to refer to the [The Symfony Framework Best Practices of the Symfony doc](https://symfony.com/doc/4.4/best_practices.html)
 
-## Merci pour votre contribution !
+## Thank you for your contribution!
