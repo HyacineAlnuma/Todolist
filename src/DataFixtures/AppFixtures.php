@@ -90,11 +90,11 @@ class AppFixtures extends Fixture
                 ->setUser($usersList[array_rand($usersList)])
             ;
             if($i === 10){
-                $task->setUser($this->getReference('user-test'));
+                $task->setUser($this->getReference('user-test', User::class));
                 $this->addReference('owned-task', $task);;
             }
             if($i === 11){
-                $task->setUser($this->getReference('user-test-2'));
+                $task->setUser($this->getReference('user-test-2', User::class));
                 $this->addReference('unowned-task', $task);;
             }
             $manager->persist($task);
