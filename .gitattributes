@@ -1,0 +1,8 @@
+public/test-coverage/*.html linguist-vendored
+public/test-coverage/Controller/*.html linguist-vendored
+public/test-coverage/DataFixtures/*.html linguist-vendored
+public/test-coverage/Entity/*.html linguist-vendored
+public/test-coverage/Form/*.html linguist-vendored
+public/test-coverage/Repository/*.html linguist-vendored
+public/test-coverage/Security/Voter/*.html linguist-vendored
+public/test-coverage/Security/*.html linguist-vendored
